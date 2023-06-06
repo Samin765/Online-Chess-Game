@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Time Slots</title>
+  </head>
+  <body>
+    <h1>Select Time Slots</h1>
+
+    <form id="timeslot-form">
+      <label for="timeslot-select">Select a time:</label>
+      <select id="timeslot-select">
+        <option value="09:00">09:00</option>
+        <option value="10:00">10:00</option>
+        <option value="11:00">11:00</option>
+        <option value="12:00">12:00</option>
+        <option value="13:00">13:00</option>
+        <option value="14:00">14:00</option>
+        <option value="15:00">15:00</option>
+        <option value="16:00">16:00</option>
+        <option value="17:00">17:00</option>
+        <option value="18:00">18:00</option>
+      </select>
+      <button type="button" onclick="addTimeSlot()">Add Time Slot</button>
+    </form>
+
+    <div id="timeslots">
+      <!-- The added time slots will appear here -->
+    </div>
+
+    <script>
+      // Define an array to store the selected time slots
+      let selectedTimeSlots = [];
+
+      // Function to add a time slot to the list
+      function addTimeSlot() {
+        // Get the selected time from the select element
+        const timeSelect = document.getElementById("timeslot-select");
+        const selectedTime = timeSelect.value;
+
+        // Check if the time slot has already been added
+        if (selectedTimeSlots.includes(selectedTime)) {
+          alert("This time slot has already been added!");
+          return;
+        }
+
+        // Add the time slot to the list
+        selectedTimeSlots.push(selectedTime);
+
+        // Create a new element to display the time slot
+        const newTimeSlot = document.createElement("div");
+        newTimeSlot.textContent = selectedTime;
+
+        // Create a button to remove the time slot
+        const removeButton = document.createElement("button");
+        removeButton.textContent = "Remove";
+        removeButton.addEventListener("click", () => {
+          removeTimeSlot(selectedTime);
+        });
+
+        // Add the time slot and remove button to the DOM
+        newTimeSlot.appendChild(removeButton);
+        document.getElementById("timeslots").appendChild(newTimeSlot);
+      }
+
+      // Function to remove a time slot from the list
+      function removeTimeSlot(time) {
+        // Find the index of the time slot in the array
+        const index = selectedTimeSlots.indexOf(time);
+
+        // Remove the time slot from the array
+        selectedTimeSlots.splice(index, 1);
+
+        // Find the corresponding element in the DOM and remove it
+        const timeSlotElements = document.querySelectorAll("#timeslots div");
+        timeSlotElements[index].remove();
+      }
+    </script>
+  </body>
+</html>
