@@ -9,7 +9,7 @@ import model from "./model.js";
 import auth from "./controllers/auth.controller.js";
 import chat from "./controllers/chat.controller.js";
 
-const port = 8991;
+const port = 8993;
 const app = express();
 const server = createServer(app);
 const io = new Server(server);

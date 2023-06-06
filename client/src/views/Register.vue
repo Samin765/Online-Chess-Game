@@ -28,7 +28,9 @@
         title="Password must be at least 3 characters long"
       />
 
-      <button type="submit" class="btn btn-dark mt-4 float-end">Register</button>
+      <button type="submit" class="btn btn-dark mt-4 float-end">
+        Register
+      </button>
     </form>
     <div class="col"></div>
   </div>
@@ -47,17 +49,19 @@ export default {
     authenticate() {
       const { commit, getters } = this.$store;
       const { push } = this.$router;
-     
 
-      fetch("/api/login", {
+      fetch("/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: this.username, password: this.password }),
+        body: JSON.stringify({
+          username: this.username,
+          password: this.password,
+        }),
       })
         .then((res) => res.json())
         .then(({ authenticated }) => {
-          commit("setAuthenticated", authenticated);
-          push(authenticated === true ? "/admin" : "/login");
+          commit("setAuthenticated", false);
+          push(authenticated === true ? "/rooms" : "/login");
         })
         .catch(console.error);
     },

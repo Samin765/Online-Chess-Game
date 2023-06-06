@@ -17,7 +17,9 @@
           <a class="nav-link" href="#" @click="redirect('/rooms')">Rooms</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="#" @click="redirect('/register')">Register</a>
+          <a class="nav-link" href="#" @click="redirect('/register')"
+            >Register</a
+          >
         </li>
       </ul>
     </div>
@@ -28,17 +30,20 @@
 </template>
 
 <script>
+import { io } from "socket.io-client";
 // @ is an alias to /src
 import "bootstrap";
 
 export default {
   name: "App",
   components: {},
-  data: () => ({}),
+  data: () => ({ socket: io().connect() }),
   mounted() {
     const { commit, getters } = this.$store;
     const { push } = this.$router;
-
+    this.$root.socket.on("msg", (lobbys) => {
+      console.log(`${JSON.stringify(lobbys)} websocket`);
+    });
     commit("setAuthenticated", false);
     push(getters.isAuthenticated === true ? "/rooms" : "/login");
   },

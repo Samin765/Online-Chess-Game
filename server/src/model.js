@@ -1,12 +1,12 @@
 import Room from "./models/room.model.js";
 import User from "./models/user.model.js";
-import Assistant from "./models/assistant.model.js"
+import Assistant from "./models/assistant.model.js";
 
 class Model {
   constructor() {
     this.rooms = {};
     this.users = {};
-    this.assistants = {}
+    this.assistants = {};
 
     this.io = undefined;
   }
@@ -27,6 +27,7 @@ class Model {
    */
   createRoom(name) {
     this.rooms[name] = new Room(name);
+    console.log(`created room ${name}`);
   }
 
   /**
@@ -69,7 +70,7 @@ class Model {
     return this.users[id];
   }
 
-  findAssistantById(id){
+  findAssistantById(id) {
     return this.assistants[id];
   }
 
@@ -81,6 +82,10 @@ class Model {
    */
   broadcast(room, message) {
     this.io.in(room.name).emit("msg", message);
+  }
+
+  broadcast2(lobbys) {
+    this.io.emit("msg", lobbys);
   }
 
   /**

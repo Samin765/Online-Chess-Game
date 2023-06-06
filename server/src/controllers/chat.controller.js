@@ -14,12 +14,49 @@ const router = Router();
  * DELETE  /rooms/{name}/messages/{id}  =>  delete a message with the given id in a room with the given name
  * etc.
  */
-
+router.post("/update-members", (req, res) => {
+  const { roomName, members } = req.body;
+  const rooms = model.getRooms();
+  // Find the corresponding room in your server's data or database
+  const room = rooms.find((room) => room.name === roomName);
+  if (room) {
+    room.members = members; // Update the members count for the room
+    res.sendStatus(200); // Send a response to acknowledge the update
+  } else {
+    res.status(404).send("Room not found"); // Send an error response if the room is not found
+  }
+});
 router.get("/rooms", (req, res) => {
   const rooms = model.getRooms();
 
   // Choose the appropriate HTTP response status code and send an HTTP response, if any, back to the client
   res.status(200).json({ rooms }); // same as { rooms: rooms }
+});
+router.post("/createroom", async (req, res) => {
+  // Check how to access data being sent as a path, query, header and cookie parameter or in the HTTP request body
+  const { username } = req.body;
+
+  const { id } = req.session;
+
+  // Create a new user with the given name and associate it with the currently active session
+
+  console.log("createroom");
+  // model.createUser(id, username);
+  // model.createAssistant(id, username);
+  model.createRoom(username);
+  model.broadcast2(model.getRooms());
+
+  req.session.save((err) => {
+    if (err) console.error(err);
+    else
+      console.debug(
+        `Saved user: ${JSON.stringify(model.findAssistantById(id))}`
+      );
+  });
+
+  // FIXME Send HTTP response status code 200 OK only when the login was successful
+
+  res.status(200).json({ authenticated: true });
 });
 
 router.get("/rooms/:name/messages", (req, res) => {

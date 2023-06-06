@@ -5,6 +5,7 @@ class Room {
   constructor(name) {
     this.name = name;
     this.messages = [];
+    this.members = 0;
   }
 
   /**

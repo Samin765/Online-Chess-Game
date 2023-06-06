@@ -30,6 +30,7 @@
 
       <button type="submit" class="btn btn-dark mt-4 float-end">LOGIN</button>
     </form>
+    <p v-if="failmsg" class="error-message">{{ failmsg }}</p>
     <div class="col"></div>
   </div>
 </template>
@@ -42,24 +43,36 @@ export default {
     username: "",
     password: "",
     msg: "",
+    failmsg: "",
   }),
   methods: {
     authenticate() {
       const { commit, getters } = this.$store;
       const { push } = this.$router;
-     
 
       fetch("/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: this.username, password: this.password }),
+        body: JSON.stringify({
+          username: this.username,
+          password: this.password,
+        }),
       })
-        .then((res) => res.json())
+        .then((res) => {
+          if (res.ok) {
+            return res.json();
+          } else {
+            throw new Error("Login failed"); // Throw an error if the login fails
+          }
+        })
         .then(({ authenticated }) => {
           commit("setAuthenticated", authenticated);
-          push(authenticated === true ? "/admin" : "/login");
+          push(authenticated === true ? "/rooms" : "/login");
         })
-        .catch(console.error);
+        .catch((error) => {
+          console.error(error);
+          this.failmsg = "Login failed. Please try again."; // Set the failmsg if there is an error
+        });
     },
   },
 };

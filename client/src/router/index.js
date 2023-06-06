@@ -35,7 +35,11 @@ const router = createRouter({
 
 // Setup authentication guard.
 router.beforeEach((to, from, next) => {
-  if (store.state.authenticated || to.path == "/login" || to.path == "/register") {
+  if (
+    store.state.authenticated ||
+    to.path == "/login" ||
+    to.path == "/register"
+  ) {
     next();
   } else {
     console.info("Unauthenticated user. Redirecting to login page.");
