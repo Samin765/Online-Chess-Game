@@ -39,19 +39,36 @@ export default {
     rooms: [],
     loading: true,
   }),
-  mounted() {
+ 
+
+    mounted() {
+  fetch("/api/getLobbies", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+  })
+  .then(response => response.json()) // Add this line
+  .then(({lobbies}) => {
+    // Now you can set this.rooms to the parsed JSON data
+    this.rooms = lobbies;
+  })
+  .catch(error => {
+    console.error("Error getting lobbies:", error);
+  });
+    },
+
+      //this.$root.socket.emit('join', 'my-room');
     //this.rooms = lobbys; // Fetch initial rooms data
-    this.$root.socket.on("msg", (lobbys) => {
-      console.log(`${JSON.stringify(lobbys)} websocket`);
-      this.rooms = lobbys; // Update rooms when a message is received
-    });
-  },
+    //this.$root.socket.on("msg", (lobbys) => {
+      //console.log(`${JSON.stringify(lobbys)} websocket`);
+      //this.rooms = lobbys; // Update rooms when a message is received
+    //});
+  
 
   methods: {
     redirect(name) {
   const room = this.rooms.find((room) => room.name === name);
   if (room && room.members < 2) {
-    room.members++; // Increment the members count
+     // Increment the members count
     
     // Send the updated count to the server
     fetch("/api/update-members", {
@@ -59,9 +76,18 @@ export default {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ roomName: room.name, members: room.members }),
     })
-      .then((response) => {
-        // Handle the server's response if needed
-      })
+       .then(response => response.json()) // Add this line
+      .then(({updated}) => {
+        if(updated){
+          room.members = room.members + 1;
+        }
+        else{
+              this.errorMessage = "Room is full. Cannot join at the moment.";
+
+        }
+    // Now you can set this.rooms to the parsed JSON data
+    
+  })
       .catch((error) => {
         console.error("Error updating members count:", error);
       });

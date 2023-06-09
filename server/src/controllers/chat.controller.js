@@ -1,5 +1,7 @@
 import { Router } from "express";
 import model from "../model.js";
+import { PAWN } from "chess.js";
+import db, { checkAssistant, registerUser, incrementWin, getUserWins, incrementPlayed } from "../db.js";
 
 const router = Router();
 
@@ -19,12 +21,19 @@ router.post("/update-members", (req, res) => {
   const rooms = model.getRooms();
   // Find the corresponding room in your server's data or database
   const room = rooms.find((room) => room.name === roomName);
-  if (room) {
-    room.members = members; // Update the members count for the room
-    res.sendStatus(200); // Send a response to acknowledge the update
+  if (room && room.members < 2) {
+    room.members = room.members + 1; // Update the members count for the room
+    res.sendStatus(200).json({ updated: true}); // Send a response to acknowledge the update
   } else {
-    res.status(404).send("Room not found"); // Send an error response if the room is not found
+    res.status(404).send("Room full").json({ updated: false}); // Send an error response if the room is not found
   }
+});
+
+router.post("/getLobbies", (req, res) => {
+  
+  
+  res.status(200).json({ lobbies: model.getRooms() });
+
 });
 router.get("/rooms", (req, res) => {
   const rooms = model.getRooms();
@@ -38,11 +47,14 @@ router.post("/createroom", async (req, res) => {
 
   const { id } = req.session;
 
+  
   // Create a new user with the given name and associate it with the currently active session
 
   console.log("createroom");
   // model.createUser(id, username);
   // model.createAssistant(id, username);
+
+  model.createGame(username);
   model.createRoom(username);
   model.broadcast2(model.getRooms());
 
@@ -74,15 +86,23 @@ router.get("/rooms/:name/messages", (req, res) => {
     return;
   }
 
+
   // FIXME Check if the user making the request is authorized to request data
 
   // Join the specified room
   user.joinRoom(room);
   model.join(socketID, room);
+  const game = model.findGameByName(name);
 
+  if(game.getPlayer1Id() == -1){
+    game.setPlayer1Id(id);
+    game.setTurn(id);
+  }else if(game.getPlayer2Id() == -1){
+    game.setPlayer2Id(id)
+}
   // Send a join message to all connected clients in the room
-  room.addMessage(`${user.name} joined the room!`);
-  model.broadcast(room, `${user.name} joined the room!`);
+  room.addMessage(game.getGameBoard());
+  model.broadcast(room, game.getGameBoard());
 
   res.status(200).json({ messages: room.messages });
 });
@@ -104,4 +124,96 @@ router.post("/rooms/:name/messages", (req, res) => {
   res.status(200).end();
 });
 
+
+router.post("/rooms/:name/movePiece", (req, res) => {
+  const { name } = req.params;
+  const { oldPosition, newPosition } = req.body;
+  const room = model.findRoomByName(name);
+  
+  const game = model.findGameByName(name);
+
+  const { id } = req.session;
+  const user = model.findUserById(id);
+
+  console.log('Check Piece:', model.checkPiece(oldPosition, game.getGameId()));
+  console.log('Game Turn:', game.getTurn());
+  console.log('Player 1 ID:', game.getPlayer1Id());
+  console.log('Player 2 ID:', game.getPlayer2Id());
+  const board = game.getGameBoard();
+
+  const piece = board[oldPosition[0]][oldPosition[1]];
+  if(id === game.getTurn() ){
+  if(model.checkPiece(oldPosition,game.getGameId()) === "UPPER" && game.getTurn() === game.getPlayer1Id()){
+
+    
+      if(model.movePiece(oldPosition, newPosition, board, "UPPER", piece)){
+        if(board[newPosition[0]][newPosition[1]] === "k" || board[newPosition[0]][newPosition[1]] === "K" ){
+          incrementWin(model.findAssistantById(id).getAssistantName());
+          incrementPlayed(model.findAssistantById(id).getAssistantName())
+          incrementPlayed(model.findAssistantById(game.getPlayer2Id()).getAssistantName())
+          game.setGameBoard([]);
+          res.status(200).json({ game_over: true });
+        }
+       board[newPosition[0]][newPosition[1]] = board[oldPosition[0]][oldPosition[1]];
+        board[oldPosition[0]][oldPosition[1]] = '';
+        
+      }
+      else{
+        res.status(400).end();
+      return;
+      }
+
+    }
+  
+  else if (model.checkPiece(oldPosition,game.getGameId()) === "LOWER" && game.getTurn() === game.getPlayer2Id()){
+
+   
+
+      if(model.movePiece(oldPosition, newPosition, board, "LOWER", piece)){
+        if(board[newPosition[0]][newPosition[1]] === "k" || board[newPosition[0]][newPosition[1]] === "K") {
+          incrementWin(model.findAssistantById(id).getAssistantName());
+          incrementPlayed(model.findAssistantById(id).getAssistantName())
+          incrementPlayed(model.findAssistantById(game.getPlayer1Id()).getAssistantName())
+          game.setGameBoard(null);
+          res.status(200).json({ game_over: true });
+        }
+    board[newPosition[0]][newPosition[1]] = board[oldPosition[0]][oldPosition[1]];
+    board[oldPosition[0]][oldPosition[1]] = '';
+    
+      }
+    
+    else{
+      res.status(400).end();
+      return;
+    }
+  
+  }
+  else{
+    console.log("Wrong Piece");
+    res.status(400).end();
+    return;
+  }
+  
+  // FIXME Check if a room with the given name exists, if the user making the request is authorized to send a message in the room etc.
+
+  // Send a custom message to all connected clients in the room
+  
+  room.addMessage(game.getGameBoard());
+  model.broadcast(room, game.getGameBoard());
+  if(game.getTurn() === game.getPlayer1Id()){
+    game.setTurn(game.getPlayer2Id());
+
+  }
+  else{
+    game.setTurn(game.getPlayer1Id());
+
+  }
+  res.status(200).end();
+  }
+  else{
+    console.log("Not Your Turn");
+    res.status(400).end();
+  }
+
+});
 export default { router };

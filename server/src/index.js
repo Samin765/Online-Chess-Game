@@ -66,6 +66,11 @@ model.createRoom("lobby2");
 model.createRoom("lobby3");
 model.createRoom("lobby4");
 
+model.createGame("lobby1");
+model.createGame("lobby2");
+model.createGame("lobby3");
+model.createGame("lobby4");
+
 // Handle socket.io connections
 io.on("connection", (socket) => {
   const { session } = socket.handshake;

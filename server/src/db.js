@@ -10,11 +10,12 @@ const db = await open({
   driver: sqlite3.Database,
 });
 
-// await db.run("DROP TABLE IF EXISTS lorem");
-// await db.run("CREATE TABLE lorem (username TEXT, password TEXT)");
+await db.run("DROP TABLE IF EXISTS lorem");
+await db.run("CREATE TABLE lorem (username TEXT, password TEXT, win INTEGER, played INTEGER)");
 
-// await db.run("INSERT INTO lorem (username, password) VALUES (?, ?)", ["samin", "123"]);
-// await db.run("INSERT INTO lorem (username, password) VALUES (?, ?)", ["elling", "1234"]);
+await db.run("INSERT INTO lorem (username, password, win, played) VALUES (?, ?, ?, ?)", ["samin", "123", 3, 4]);
+await db.run("INSERT INTO lorem (username, password, win , played) VALUES (?, ?, ?, ?)", ["elling", "1234", 2, 2]);
+
 
 // const statement = await db.prepare("INSERT INTO lorem VALUES (?)");
 // for (let i = 0; i < 10; i += 1) {
@@ -38,8 +39,8 @@ async function checkAssistant(username, password) {
 async function registerUser(username, password) {
   console.log(`register${username} +${password}`);
 
-  const insertQuery = "INSERT INTO lorem (username, password) VALUES (?, ?)";
-  const insertData = [username, password];
+  const insertQuery = "INSERT INTO lorem (username, password) VALUES (?, ?, ?, ?)";
+  const insertData = [username, password, 0 , 0];
   const row1 = await db.get("SELECT * FROM lorem WHERE username = ?", [
     username,
   ]);
@@ -58,6 +59,48 @@ async function registerUser(username, password) {
   }
 }
 
-export { checkAssistant, registerUser };
+async function incrementWin(username) {
+  // Prepare the SQL statement
+  const updateQuery = "UPDATE lorem SET win = win + 1 WHERE username = ?";
+
+  try {
+    // Execute the SQL statement
+    await db.run(updateQuery, [username]);
+  } catch (error) {
+    // Log any error that occurred
+    console.error(`Error updating win count for user ${username}:`, error);
+  }
+}
+
+async function getUserWins(username){
+  try{
+    const row1 = await db.get(
+      "SELECT win FROM lorem WHERE username = ?",
+      [username]
+    );
+    return row1.win;
+  }
+  catch(error) {
+    console.error(error);
+    return 0;
+  }
+}
+
+
+async function incrementPlayed(username) {
+  // Prepare the SQL statement
+  const updateQuery = "UPDATE lorem SET played = played + 1 WHERE username = ?";
+
+  try {
+    // Execute the SQL statement
+    await db.run(updateQuery, [username]);
+  } catch (error) {
+    // Log any error that occurred
+    console.error(`Error updating played count for user ${username}:`, error);
+  }
+}
+
+
+export { checkAssistant, registerUser, incrementWin, getUserWins, incrementPlayed };
 
 export default db;

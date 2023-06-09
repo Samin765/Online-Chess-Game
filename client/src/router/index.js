@@ -4,6 +4,7 @@ import Room from "../views/Room.vue";
 import Login from "../views/Login.vue";
 import Rooms from "../views/Rooms.vue";
 import Register from "../views/Register.vue";
+import User from "../views/User.vue";
 
 const routes = [
   {
@@ -26,6 +27,10 @@ const routes = [
     path: "/register",
     component: Register,
   },
+  {
+    path: "/user",
+    component: User,
+  }
 ];
 
 const router = createRouter({
@@ -46,5 +51,7 @@ router.beforeEach((to, from, next) => {
     next("/login");
   }
 });
+
+
 
 export default router;

@@ -1,112 +1,108 @@
 <template>
-  <div class="room">
-    <h1>Chess Room</h1>
-    <div class="game">
-      <div class="chessboard" v-if="isGameReady" ref="chessboardRef"></div>
-      <div class="waiting" v-else>
-        <p>Waiting for the second player to join...</p>
-      </div>
-      <div class="game-info" v-if="isGameReady && isGameStarted">
-        <p>{{ currentPlayer.name }}'s Turn</p>
-        <p v-if="gameStatus">{{ gameStatus }}</p>
-        <button @click="restartGame">Restart Game</button>
+  <div class="chessboard">
+    <div class="row" v-for="(row, i) in messages" :key="i">
+      <div class="tile" 
+           v-for="(piece, j) in row" 
+           :key="j" 
+           :class="{ 'black-tile': (i+j) % 2 === 0 }"
+           @click="handleClick(i, j)"
+      >
+        {{ piece }}
       </div>
     </div>
   </div>
 </template>
 
-<script>
-import Chess from "chess.js";
-import Chessboard from "chessboardjs";
 
+
+<script>
 export default {
-  name: "Room",
+  name: "RoomView",
+  components: {},
   data() {
     return {
-      chess: null,
-      currentPlayer: { name: "Player 1", color: "w" },
-      gameStatus: null,
-      isGameReady: false,
-      isGameStarted: false,
+      name: this.$route.params.name,
+      messages: [],
+      message: "",
+      selectedTile: null,
     };
   },
-  mounted() {
-    // Simulate waiting for the second player to join
-    setTimeout(() => {
-      this.isGameReady = true;
-      // Chess game initialization
-      this.initializeChessboard();
-    }, 5000); // Wait for 5 seconds (replace with your actual implementation)
+  async mounted() {
+    const res = await fetch(`/api/rooms/${this.name}/messages`);
+    const { messages } = await res.json();
+    this.messages = messages;
+    const { socket } = this.$root;
+    socket.on("msg", (msg) => {
+      if(msg === null){
+        this.$router.push("/rooms");
+      }
+      this.messages =  msg;
+    });
   },
   methods: {
-    initializeChessboard() {
-      this.chess = new Chess();
+    send() {
+      fetch(`/api/rooms/${this.name}/messages`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: this.message }),
+      }).catch(console.error);
+      this.message = "";
+    },
+ 
 
-      const config = {
-        draggable: true,
-        dropOffBoard: "trash",
-        position: "start",
-      };
+  handleClick(i, j) {
+  if (this.selectedTile) {
+    const oldPosition = this.selectedTile;
+    const newPosition = [i, j];
 
-      const chessboard = Chessboard(this.$refs.chessboardRef, config);
-      this.updateChessboard(chessboard.position());
-
-      chessboard.on("drop", (source, target) => {
-        const move = this.chess.move({ from: source, to: target });
-        if (move === null) return "snapback";
-
-        this.updateChessboard(chessboard.position());
-
-        // Check game status
-        if (this.chess.in_checkmate()) {
-          this.gameStatus = "Checkmate!";
-        } else if (this.chess.in_draw()) {
-          this.gameStatus = "Draw!";
-        } else if (this.chess.in_check()) {
-          this.gameStatus = "Check!";
+    // make a fetch call to the server to update the move
+    fetch(`/api/rooms/${this.name}/movePiece`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ oldPosition, newPosition }),
+    })
+      .then(response => response.json()) // Add this line
+      .then(({game_over}) => {
+        if(game_over){
+          this.$router.push("/rooms");
         }
+        else{
+              this.errorMessage = "Game still going";
 
-        // Switch players
-        this.currentPlayer =
-          this.currentPlayer.name === "Player 1"
-            ? { name: "Player 2", color: "b" }
-            : { name: "Player 1", color: "w" };
+        }
+      })
+      .catch((error) => {
+        console.error("Error moving piece:", error);
       });
 
-      this.isGameStarted = true;
-    },
-    updateChessboard(position) {
-      this.$refs.chessboardRef.chessboard.position(position);
-    },
-    restartGame() {
-      // Restart the game (reset the chessboard)
-      this.initializeChessboard();
-      this.currentPlayer = { name: "Player 1", color: "w" };
-      this.gameStatus = null;
-    },
-  },
+    // clear selection after sending the data
+    this.selectedTile = null;
+  } else if (this.messages[i][j] !== '') {
+    // select piece
+    this.selectedTile = [i, j];
+  }
+}
+   },
 };
 </script>
-
-<style>
-.room {
+<style scoped>
+.chessboard {
   display: flex;
   flex-direction: column;
-  align-items: center;
 }
-
-.game {
+.row {
   display: flex;
-  justify-content: center;
+}
+.tile {
+  width: 30px;
+  height: 30px;
+  border: 1px solid black;
+  display: flex;
   align-items: center;
+  justify-content: center;
 }
-
-.chessboard {
-  width: 400px;
-  height: 400px;
-}
-
-.waiting {
-  margin-top: 20px;
+.black-tile {
+  background-color: black;
+  color: white;
 }
 </style>

@@ -1,6 +1,6 @@
 import { Router } from "express";
 import model from "../model.js";
-import db, { checkAssistant, registerUser } from "../db.js";
+import db, { checkAssistant, registerUser, incrementWin, getUserWins, incrementPlayed } from "../db.js";
 
 const router = Router();
 
@@ -24,6 +24,18 @@ const requireAuth = (req, res, next) => {
 
   next();
 };
+
+router.get('/userdata', async (req, res) => {
+  const {id} = req.session;
+  const user = model.findAssistantById(id);
+  const username = user.getAssistantName();
+  console.log(username);
+  const numwins = await getUserWins(username);
+  console.log("userwins " + numwins)
+  res.status(200).json({ username, numwins});
+  console.log("fetch call server side");
+ 
+});
 
 router.get("/users/me", (req, res) => {
   const { id } = req.session;
@@ -67,6 +79,7 @@ router.post("/register", async (req, res) => {
   if (await registerUser(username, password)) {
     console.log("register");
     // model.createUser(id, username);
+    model.createUser(id, username);
     model.createAssistant(id, username);
 
     req.session.save((err) => {
@@ -74,7 +87,7 @@ router.post("/register", async (req, res) => {
         console.error(err);
       } else {
         console.debug(
-          `Saved user: ${JSON.stringify(model.findAssistantById(id))}`
+          `Saved user: ${JSON.stringify(model.findAssistantById(id), model.findUserById(id))}`
         );
       }
     });

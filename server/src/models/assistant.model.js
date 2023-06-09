@@ -6,19 +6,19 @@ class Assistant {
 
   // här kommer eventuella getters, setters elle andra "nödvändiga" metoder
 
-  getAssistanID() {
+  getAssistantID() {
     return this.id;
   }
 
-  getAssistanName() {
+  getAssistantName() {
     return this.name;
   }
 
-  setAssistanID(id) {
+  setAssistantID(id) {
     this.id = id;
   }
 
-  setAssistanName(name) {
+  setAssistantName(name) {
     this.name = name;
   }
 }

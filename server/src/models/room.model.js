@@ -14,7 +14,7 @@ class Room {
    * @returns {void}
    */
   addMessage(message) {
-    this.messages.push(message);
+    this.messages = message;
   }
 }
 

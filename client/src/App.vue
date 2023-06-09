@@ -21,6 +21,11 @@
             >Register</a
           >
         </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#" @click="redirect('/user')"
+            >User</a
+          >
+        </li>
       </ul>
     </div>
   </nav>
