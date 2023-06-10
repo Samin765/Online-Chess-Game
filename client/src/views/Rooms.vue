@@ -109,6 +109,18 @@ export default {
         .then((res) => res.json())
         .then(({ authenticated }) => {
           commit("setAuthenticated", true);
+          fetch("/api/getLobbies", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+  })
+  .then(response => response.json()) // Add this line
+  .then(({lobbies}) => {
+    // Now you can set this.rooms to the parsed JSON data
+    this.rooms = lobbies;
+  })
+  .catch(error => {
+    console.error("Error getting lobbies:", error);
+  });
           push(authenticated === true ? "/rooms" : "/rooms");
         })
         .catch(console.error);

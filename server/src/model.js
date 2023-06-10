@@ -99,7 +99,7 @@ class Model {
   }
 
   broadCast3(lobbys){
-    io.to('my-room').emit('msg', lobbyes);
+    this.io.in('my-room').emit('msg', lobbyes);
 
   }
 

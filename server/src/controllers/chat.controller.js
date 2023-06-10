@@ -56,7 +56,7 @@ router.post("/createroom", async (req, res) => {
 
   model.createGame(username);
   model.createRoom(username);
-  model.broadcast2(model.getRooms());
+  //model.broadcast2(model.getRooms());
 
   req.session.save((err) => {
     if (err) console.error(err);
@@ -151,7 +151,7 @@ router.post("/rooms/:name/movePiece", (req, res) => {
           incrementWin(model.findAssistantById(id).getAssistantName());
           incrementPlayed(model.findAssistantById(id).getAssistantName())
           incrementPlayed(model.findAssistantById(game.getPlayer2Id()).getAssistantName())
-          game.setGameBoard([]);
+          game.setGameBoard(null);
           res.status(200).json({ game_over: true });
         }
        board[newPosition[0]][newPosition[1]] = board[oldPosition[0]][oldPosition[1]];
