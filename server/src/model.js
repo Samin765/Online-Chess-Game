@@ -35,6 +35,9 @@ class Model {
   createGame(name){
     this.games[name] = new Game(name)
   }
+  removeAssistant(id) {
+    delete this.assistants[id];
+  }
 
   /**
    * Return the room object with the matching name.
@@ -90,8 +93,9 @@ class Model {
    * @param {String} message - The message to add.
    * @returns {void}
    */
-  broadcast(room, message) {
-    this.io.in(room.name).emit("msg", message);
+  broadcast(room, message, members) {
+    this.io.in(room.name).emit("msg", {messages: message, members});
+    console.log("MEMBERS: " + members);
   }
 
   broadcast2(lobbys) {

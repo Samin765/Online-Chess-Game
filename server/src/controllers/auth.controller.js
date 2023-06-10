@@ -1,6 +1,6 @@
 import { Router } from "express";
 import model from "../model.js";
-import db, { checkAssistant, registerUser, incrementWin, getUserWins, incrementPlayed } from "../db.js";
+import db, { checkAssistant, registerUser, incrementWin, getUserWins, incrementPlayed, getUserPlayed, getUserHistory } from "../db.js";
 
 const router = Router();
 
@@ -25,14 +25,35 @@ const requireAuth = (req, res, next) => {
   next();
 };
 
+router.post("/logOut", async (req, res) => {
+  const { id } = req.session;
+
+  model.removeAssistant(id);
+  req.session.destroy((err) => {
+    if (err) {
+      return res
+        .status(401)
+        .json({ message: "Could not log out, please try again" });
+    }
+    return res.status(200).json({ authenticated: false });
+  });
+});
+router.get("/session", requireAuth, (req, res) => {
+  res.status(200).json({ authenticated: true });
+});
+
 router.get('/userdata', async (req, res) => {
   const {id} = req.session;
   const user = model.findAssistantById(id);
   const username = user.getAssistantName();
   console.log(username);
   const numwins = await getUserWins(username);
-  console.log("userwins " + numwins)
-  res.status(200).json({ username, numwins});
+  const numplayed = await getUserPlayed(username);
+  console.log("userwins " + numwins);
+  console.log("numplayed " + numplayed);
+  const history = await getUserHistory(username);
+  console.log("hist " + history);
+  res.status(200).json({ username, numwins, numplayed, history});
   console.log("fetch call server side");
  
 });

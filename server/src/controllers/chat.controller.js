@@ -1,7 +1,7 @@
 import { Router } from "express";
 import model from "../model.js";
 import { PAWN } from "chess.js";
-import db, { checkAssistant, registerUser, incrementWin, getUserWins, incrementPlayed } from "../db.js";
+import db, { checkAssistant, registerUser, incrementWin, getUserWins, incrementPlayed, addMatch} from "../db.js";
 
 const router = Router();
 
@@ -23,12 +23,30 @@ router.post("/update-members", (req, res) => {
   const room = rooms.find((room) => room.name === roomName);
   if (room && room.members < 2) {
     room.members = room.members + 1; // Update the members count for the room
-    res.sendStatus(200).json({ updated: true}); // Send a response to acknowledge the update
+    res.status(200).json({ updated: true }); // Send a response to acknowledge the update
   } else {
-    res.status(404).send("Room full").json({ updated: false}); // Send an error response if the room is not found
+    res.status(404).send("Room full"); // Send an error response if the room is not found
   }
 });
 
+router.post("/decrement-members", (req, res) => {
+ ;
+  const { roomName, members } = req.body;
+  console.log("SERVER SIDE CHECK: name: " + roomName);
+  const rooms = model.getRooms();
+  console.log("SERVER SIDE CHECK: rooms: " + rooms);
+  // Find the corresponding room in your server's data or database
+  const room = rooms.find((room) => room.name === roomName);
+  console.log("SERVER SIDE CHECK: Room: " + room);
+  if (room) {
+    console.log("SERVER SIDE CHECK: if ");
+    room.members = room.members - 1; // Update the members count for the room
+    res.status(200).json({ updated: true }); // Send a response to acknowledge the update
+  } else {
+    console.log("SERVER SIDE CHECK: else");
+    res.status(404).send("fail"); // Send an error response if the room is not found
+  }
+});
 router.post("/getLobbies", (req, res) => {
   
   
@@ -102,7 +120,7 @@ router.get("/rooms/:name/messages", (req, res) => {
 }
   // Send a join message to all connected clients in the room
   room.addMessage(game.getGameBoard());
-  model.broadcast(room, game.getGameBoard());
+  model.broadcast(room, game.getGameBoard(), room.members);
 
   res.status(200).json({ messages: room.messages });
 });
@@ -119,7 +137,7 @@ router.post("/rooms/:name/messages", (req, res) => {
 
   // Send a custom message to all connected clients in the room
   room.addMessage(`${user.name}: ${message}`);
-  model.broadcast(room, `${user.name}: ${message}`);
+  model.broadcast(room, `${user.name}: ${message}`, room.members);
 
   res.status(200).end();
 });
@@ -149,8 +167,9 @@ router.post("/rooms/:name/movePiece", (req, res) => {
       if(model.movePiece(oldPosition, newPosition, board, "UPPER", piece)){
         if(board[newPosition[0]][newPosition[1]] === "k" || board[newPosition[0]][newPosition[1]] === "K" ){
           incrementWin(model.findAssistantById(id).getAssistantName());
-          incrementPlayed(model.findAssistantById(id).getAssistantName())
-          incrementPlayed(model.findAssistantById(game.getPlayer2Id()).getAssistantName())
+          incrementPlayed(model.findAssistantById(id).getAssistantName());
+          incrementPlayed(model.findAssistantById(game.getPlayer2Id()).getAssistantName());
+          addMatch(model.findAssistantById(id).getAssistantName(),model.findAssistantById(game.getPlayer2Id()).getAssistantName() );
           game.setGameBoard(null);
           res.status(200).json({ game_over: true });
         }
@@ -172,8 +191,9 @@ router.post("/rooms/:name/movePiece", (req, res) => {
       if(model.movePiece(oldPosition, newPosition, board, "LOWER", piece)){
         if(board[newPosition[0]][newPosition[1]] === "k" || board[newPosition[0]][newPosition[1]] === "K") {
           incrementWin(model.findAssistantById(id).getAssistantName());
-          incrementPlayed(model.findAssistantById(id).getAssistantName())
-          incrementPlayed(model.findAssistantById(game.getPlayer1Id()).getAssistantName())
+          incrementPlayed(model.findAssistantById(id).getAssistantName());
+          incrementPlayed(model.findAssistantById(game.getPlayer1Id()).getAssistantName());
+          addMatch(model.findAssistantById(id).getAssistantName(),model.findAssistantById(game.getPlayer2Id()).getAssistantName() );
           game.setGameBoard(null);
           res.status(200).json({ game_over: true });
         }
@@ -199,7 +219,7 @@ router.post("/rooms/:name/movePiece", (req, res) => {
   // Send a custom message to all connected clients in the room
   
   room.addMessage(game.getGameBoard());
-  model.broadcast(room, game.getGameBoard());
+  model.broadcast(room, game.getGameBoard(), room.members);
   if(game.getTurn() === game.getPlayer1Id()){
     game.setTurn(game.getPlayer2Id());
 

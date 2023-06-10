@@ -52,6 +52,16 @@ export default {
     commit("setAuthenticated", false);
     push(getters.isAuthenticated === true ? "/rooms" : "/login");
   },
+  created() {
+    fetch("/api/session")
+      .then((res) => res.json())
+      .then(({ authenticated }) => {
+        if (authenticated === true) {
+          this.$store.commit("setAuthenticated", true);
+        }
+      })
+      .catch(console.error);
+  },
   methods: {
     redirect(target) {
       this.$router.push(target);

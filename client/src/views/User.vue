@@ -1,15 +1,24 @@
 <template>
-    <div>
-      <p>Hi, {{ username }}, you have {{ numwins }} wins.</p>
-    </div>
+  <div>
+    <p>Hi, {{ username }}, you have {{ numwins }} wins and {{ numplayed }} games played.</p>
+    <ul>
+      <li v-for="match in history" :key="match.id">
+        Winner: {{ match.winner }}, Loser: {{ match.loser }}
+      </li>
+    </ul>
+    <button type="button" @click="logout">Logout</button>
+  </div>
 </template>
+
   
 <script>
 export default {
   data() {
     return {
       username: '',
-      numwins: 0
+      numwins: 0,
+      numplayed: 0,
+      history: []
     };
   },
   mounted() {
@@ -17,6 +26,15 @@ export default {
     this.fetchUserData();
   },
   methods: {
+    async logout() {
+      // Trigger the logout action and redirect to the login page
+      await fetch("/api/logOut", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      this.$store.commit("setAuthenticated", false); // servern ska hatera detta
+      this.$router.push("/login");
+    },
     async fetchUserData() {
       console.log("fetch call client side");
       try{
@@ -25,10 +43,12 @@ export default {
           headers: { "Content-Type": "application/json" },
         });
 
-        const {username, numwins} = await res.json();
+        const {username, numwins, numplayed, history} = await res.json();
         console.log(username);
         this.username = username;
         this.numwins = numwins;
+        this.history = history;
+        this.numplayed = numplayed;
       }
       catch (error) {
         console.error(error);
