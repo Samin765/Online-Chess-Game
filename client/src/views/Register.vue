@@ -47,7 +47,7 @@ export default {
   }),
   methods: {
     authenticate() {
-      const { commit, getters } = this.$store;
+      const { commit } = this.$store;
       const { push } = this.$router;
 
       fetch("/api/register", {

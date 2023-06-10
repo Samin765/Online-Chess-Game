@@ -30,7 +30,7 @@ const routes = [
   {
     path: "/user",
     component: User,
-  }
+  },
 ];
 
 const router = createRouter({
@@ -42,8 +42,8 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   if (
     store.state.authenticated ||
-    to.path == "/login" ||
-    to.path == "/register"
+    to.path === "/login" ||
+    to.path === "/register"
   ) {
     next();
   } else {
@@ -51,7 +51,5 @@ router.beforeEach((to, from, next) => {
     next("/login");
   }
 });
-
-
 
 export default router;

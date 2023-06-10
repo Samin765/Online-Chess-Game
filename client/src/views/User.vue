@@ -1,6 +1,9 @@
 <template>
   <div>
-    <p>Hi, {{ username }}, you have {{ numwins }} wins and {{ numplayed }} games played.</p>
+    <p>
+      Hi, {{ username }}, you have {{ numwins }} wins and {{ numplayed }} games
+      played.
+    </p>
     <ul>
       <li v-for="match in history" :key="match.id">
         Winner: {{ match.winner }}, Loser: {{ match.loser }}
@@ -10,15 +13,15 @@
   </div>
 </template>
 
-  
 <script>
 export default {
+  name: "UserProfile",
   data() {
     return {
-      username: '',
+      username: "",
       numwins: 0,
       numplayed: 0,
-      history: []
+      history: [],
     };
   },
   mounted() {
@@ -37,23 +40,22 @@ export default {
     },
     async fetchUserData() {
       console.log("fetch call client side");
-      try{
+      try {
         const res = await fetch("/api/userdata", {
           method: "GET",
           headers: { "Content-Type": "application/json" },
         });
 
-        const {username, numwins, numplayed, history} = await res.json();
+        const { username, numwins, numplayed, history } = await res.json();
         console.log(username);
         this.username = username;
         this.numwins = numwins;
         this.history = history;
         this.numplayed = numplayed;
-      }
-      catch (error) {
+      } catch (error) {
         console.error(error);
       }
-    }
-  }
+    },
+  },
 };
 </script>

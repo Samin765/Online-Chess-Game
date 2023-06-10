@@ -1,11 +1,11 @@
 <template>
   <div>
     <div v-if="members > 1" class="chessboard">
-      <div class="row" v-for="(row, i) in messages" :key="i">
+      <div v-for="(row, i) in messages" :key="i" class="row">
         <div
-          class="tile"
           v-for="(piece, j) in row"
           :key="j"
+          class="tile"
           :class="{ 'black-tile': (i + j) % 2 === 0 }"
           @click="handleClick(i, j)"
         >
@@ -23,6 +23,14 @@
 export default {
   name: "RoomView",
   components: {},
+  beforeRouteLeave(to, from, next) {
+    // Check if the user is leaving the current route/view
+    if (to.name !== "RoomView") {
+      this.decrementMembers(); // Decrement members count before leaving
+    }
+
+    next(); // Proceed to the next route
+  },
   data() {
     return {
       name: this.$route.params.name,
@@ -34,8 +42,8 @@ export default {
   },
   async mounted() {
     const res = await fetch(`/api/rooms/${this.name}/messages`);
-    const { messages } = await res.json();
-    this.messages = messages;
+    const { messages: fetchedMessages } = await res.json();
+    this.messages = fetchedMessages;
     const { socket } = this.$root;
     socket.on("msg", ({ messages, members }) => {
       if (messages === null) {
@@ -43,31 +51,30 @@ export default {
       }
       this.messages = messages;
       this.members = members;
-      console.log("MEMBERS CLIENT:" + this.members);
+      console.log(`MEMBERS CLIENT:${this.members}`);
     });
   },
   methods: {
-    async decrementMembers(){
+    async decrementMembers() {
       console.log("DECREMENT MEMBERS!!!!");
       fetch("/api/decrement-members", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ roomName: this.name, members: this.members }),
-})
-  .then(response => response.json())
-  .then(({ updated }) => {
-    if (updated) {
-      this.members = this.members - 1;
-    } else {
-      this.errorMessage = "Failed to decrement members count.";
-    }
-  })
-  .catch((error) => {
-    console.error("Error decrementing members count:", error);
-  });
-
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ roomName: this.name, members: this.members }),
+      })
+        .then((response) => response.json())
+        .then(({ updated }) => {
+          if (updated) {
+            this.members -= 1;
+          } else {
+            this.errorMessage = "Failed to decrement members count.";
+          }
+        })
+        .catch((error) => {
+          console.error("Error decrementing members count:", error);
+        });
     },
-   
+
     send() {
       fetch(`/api/rooms/${this.name}/messages`, {
         method: "POST",
@@ -87,9 +94,9 @@ export default {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ oldPosition, newPosition }),
         })
-          .then(response => response.json())
-          .then(({ game_over }) => {
-            if (game_over) {
+          .then((response) => response.json())
+          .then(({ gameover }) => {
+            if (gameover) {
               this.$router.push("/rooms");
             } else {
               this.errorMessage = "Game still going";
@@ -107,14 +114,6 @@ export default {
       }
     },
   },
-  beforeRouteLeave(to, from, next) {
-    // Check if the user is leaving the current route/view
-    if (to.name !== "RoomView") {
-      this.decrementMembers(); // Decrement members count before leaving
-    }
-
-    next(); // Proceed to the next route
-  }, 
 };
 </script>
 
@@ -123,9 +122,11 @@ export default {
   display: flex;
   flex-direction: column;
 }
+
 .row {
   display: flex;
 }
+
 .tile {
   width: 30px;
   height: 30px;
@@ -134,6 +135,7 @@ export default {
   align-items: center;
   justify-content: center;
 }
+
 .black-tile {
   background-color: black;
   color: white;

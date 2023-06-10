@@ -47,7 +47,7 @@ export default {
   }),
   methods: {
     authenticate() {
-      const { commit, getters } = this.$store;
+      const { commit } = this.$store;
       const { push } = this.$router;
 
       fetch("/api/login", {
@@ -61,9 +61,8 @@ export default {
         .then((res) => {
           if (res.ok) {
             return res.json();
-          } else {
-            throw new Error("Login failed"); // Throw an error if the login fails
           }
+          throw new Error("Login failed"); // Throw an error if the login fails
         })
         .then(({ authenticated }) => {
           commit("setAuthenticated", authenticated);

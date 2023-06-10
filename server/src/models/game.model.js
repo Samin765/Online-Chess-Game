@@ -1,41 +1,42 @@
 class Game {
-    constructor(gameId) {
-      this.player1Id = -1;
-      this.player2Id = -1;
-      this.gameId = gameId;
-      this.gameBoard = [
-        ['R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R'],
-        ['P', 'P', 'P', 'P', 'P', 'P', 'P', 'P'],
-        ['', '', '', '', '', '', '', ''],
-        ['', '', '', '', '', '', '', ''],
-        ['', '', '', '', '', '', '', ''],
-        ['', '', '', '', '', '', '', ''],
-        ['p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'],
-        ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'],
-      ];
-      this.turn = 0
-      this.gameOver = false;
-      this.winner = -1;
-    }
-    // här kommer eventuella getters, setters elle andra "nödvändiga" metoder
-  
+  constructor(gameId) {
+    this.player1Id = -1;
+    this.player2Id = -1;
+    this.gameId = gameId;
+    this.gameBoard = [
+      ["R", "N", "B", "Q", "K", "B", "N", "R"],
+      ["P", "P", "P", "P", "P", "P", "P", "P"],
+      ["", "", "", "", "", "", "", ""],
+      ["", "", "", "", "", "", "", ""],
+      ["", "", "", "", "", "", "", ""],
+      ["", "", "", "", "", "", "", ""],
+      ["p", "p", "p", "p", "p", "p", "p", "p"],
+      ["r", "n", "b", "q", "k", "b", "n", "r"],
+    ];
+    this.turn = 0;
+    this.gameOver = false;
+    this.winner = -1;
+  }
+  // här kommer eventuella getters, setters elle andra "nödvändiga" metoder
+
   getGameId() {
     return this.gameId;
   }
-  getGameOver(){
-      return this.gameOver;
+
+  getGameOver() {
+    return this.gameOver;
   }
 
-  setGameOver(){
-   this.gameOver = true;
+  setGameOver() {
+    this.gameOver = true;
   }
 
-  getGameWinner(){
-      return this.winner;
+  getGameWinner() {
+    return this.winner;
   }
 
-  setGameWinner(name){
-      this.winner = name;
+  setGameWinner(name) {
+    this.winner = name;
   }
 
   getPlayer1Id() {
@@ -53,6 +54,7 @@ class Game {
   getTurn() {
     return this.turn;
   }
+
   setGameId(id) {
     this.gameId = id;
   }
@@ -69,10 +71,9 @@ class Game {
     this.gameBoard = gameBoard;
   }
 
-  setTurn(turn){
-      this.turn = turn;
+  setTurn(turn) {
+    this.turn = turn;
   }
 }
-  
-  export default Game;
-  
+
+export default Game;

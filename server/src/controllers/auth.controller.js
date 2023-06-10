@@ -1,6 +1,12 @@
 import { Router } from "express";
 import model from "../model.js";
-import db, { checkAssistant, registerUser, incrementWin, getUserWins, incrementPlayed, getUserPlayed, getUserHistory } from "../db.js";
+import {
+  checkAssistant,
+  registerUser,
+  getUserWins,
+  getUserPlayed,
+  getUserHistory,
+} from "../db.js";
 
 const router = Router();
 
@@ -42,20 +48,19 @@ router.get("/session", requireAuth, (req, res) => {
   res.status(200).json({ authenticated: true });
 });
 
-router.get('/userdata', async (req, res) => {
-  const {id} = req.session;
+router.get("/userdata", async (req, res) => {
+  const { id } = req.session;
   const user = model.findAssistantById(id);
   const username = user.getAssistantName();
   console.log(username);
   const numwins = await getUserWins(username);
   const numplayed = await getUserPlayed(username);
-  console.log("userwins " + numwins);
-  console.log("numplayed " + numplayed);
+  console.log(`userwins ${numwins}`);
+  console.log(`numplayed ${numplayed}`);
   const history = await getUserHistory(username);
-  console.log("hist " + history);
-  res.status(200).json({ username, numwins, numplayed, history});
+  console.log(`hist ${history}`);
+  res.status(200).json({ username, numwins, numplayed, history });
   console.log("fetch call server side");
- 
 });
 
 router.get("/users/me", (req, res) => {
@@ -91,7 +96,7 @@ router.post("/login", async (req, res) => {
   }
 });
 
-router.post("/register", async (req, res) => {
+router.post("/register", async (req) => {
   // Check how to access data being sent as a path, query, header, or cookie parameter or in the HTTP request body
   const { username, password } = req.body;
   const { id } = req.session;
@@ -108,7 +113,10 @@ router.post("/register", async (req, res) => {
         console.error(err);
       } else {
         console.debug(
-          `Saved user: ${JSON.stringify(model.findAssistantById(id), model.findUserById(id))}`
+          `Saved user: ${JSON.stringify(
+            model.findAssistantById(id),
+            model.findUserById(id)
+          )}`
         );
       }
     });

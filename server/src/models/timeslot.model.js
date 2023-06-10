@@ -1,9 +1,9 @@
 class Timeslot {
-  constructor(id, timeId, time, booked, booked_by) {
+  constructor(id, timeId, time, booked, bookedby) {
     this.id = id;
     this.timeId = timeId;
     this.booked = booked;
-    this.booked_by = booked_by;
+    this.bookedby = bookedby;
   }
   // här kommer eventuella getters, setters elle andra "nödvändiga" metoder
 }

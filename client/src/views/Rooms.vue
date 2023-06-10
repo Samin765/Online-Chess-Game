@@ -39,66 +39,61 @@ export default {
     rooms: [],
     loading: true,
   }),
- 
 
-    mounted() {
-  fetch("/api/getLobbies", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-  })
-  .then(response => response.json()) // Add this line
-  .then(({lobbies}) => {
-    // Now you can set this.rooms to the parsed JSON data
-    this.rooms = lobbies;
-  })
-  .catch(error => {
-    console.error("Error getting lobbies:", error);
-  });
-    },
+  mounted() {
+    fetch("/api/getLobbies", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+    })
+      .then((response) => response.json()) // Add this line
+      .then(({ lobbies }) => {
+        // Now you can set this.rooms to the parsed JSON data
+        this.rooms = lobbies;
+      })
+      .catch((error) => {
+        console.error("Error getting lobbies:", error);
+      });
+  },
 
-      //this.$root.socket.emit('join', 'my-room');
-    //this.rooms = lobbys; // Fetch initial rooms data
-    //this.$root.socket.on("msg", (lobbys) => {
-      //console.log(`${JSON.stringify(lobbys)} websocket`);
-      //this.rooms = lobbys; // Update rooms when a message is received
-    //});
-  
+  // this.$root.socket.emit('join', 'my-room');
+  // this.rooms = lobbys; // Fetch initial rooms data
+  // this.$root.socket.on("msg", (lobbys) => {
+  // console.log(`${JSON.stringify(lobbys)} websocket`);
+  // this.rooms = lobbys; // Update rooms when a message is received
+  // });
 
   methods: {
     redirect(name) {
-  const room = this.rooms.find((room) => room.name === name);
-  if (room && room.members < 2) {
-     // Increment the members count
-    
-    // Send the updated count to the server
-    fetch("/api/update-members", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ roomName: room.name, members: room.members }),
-    })
-       .then(response => response.json()) // Add this line
-      .then(({updated}) => {
-        if(updated){
-          room.members = room.members + 1;
-        }
-        else{
+      const room = this.rooms.find((r) => r.name === name);
+      if (room && room.members < 2) {
+        // Increment the members count
+
+        // Send the updated count to the server
+        fetch("/api/update-members", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ roomName: room.name, members: room.members }),
+        })
+          .then((response) => response.json()) // Add this line
+          .then(({ updated }) => {
+            if (updated) {
+              room.members += 1;
+            } else {
               this.errorMessage = "Room is full. Cannot join at the moment.";
+            }
+            // Now you can set this.rooms to the parsed JSON data
+          })
+          .catch((error) => {
+            console.error("Error updating members count:", error);
+          });
 
-        }
-    // Now you can set this.rooms to the parsed JSON data
-    
-  })
-      .catch((error) => {
-        console.error("Error updating members count:", error);
-      });
-
-    this.$router.push(`/rooms/${name}`);
-  } else {
-    this.errorMessage = "Room is full. Cannot join at the moment.";
-  }
-},
+        this.$router.push(`/rooms/${name}`);
+      } else {
+        this.errorMessage = "Room is full. Cannot join at the moment.";
+      }
+    },
     authenticate() {
-      const { commit, getters } = this.$store;
+      const { commit } = this.$store;
       const { push } = this.$router;
 
       fetch("/api/createroom", {
@@ -110,17 +105,17 @@ export default {
         .then(({ authenticated }) => {
           commit("setAuthenticated", true);
           fetch("/api/getLobbies", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-  })
-  .then(response => response.json()) // Add this line
-  .then(({lobbies}) => {
-    // Now you can set this.rooms to the parsed JSON data
-    this.rooms = lobbies;
-  })
-  .catch(error => {
-    console.error("Error getting lobbies:", error);
-  });
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+          })
+            .then((response) => response.json()) // Add this line
+            .then(({ lobbies }) => {
+              // Now you can set this.rooms to the parsed JSON data
+              this.rooms = lobbies;
+            })
+            .catch((error) => {
+              console.error("Error getting lobbies:", error);
+            });
           push(authenticated === true ? "/rooms" : "/rooms");
         })
         .catch(console.error);

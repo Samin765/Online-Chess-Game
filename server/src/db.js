@@ -11,18 +11,41 @@ const db = await open({
 });
 
 await db.run("DROP TABLE IF EXISTS lorem");
-await db.run("CREATE TABLE lorem (username TEXT, password TEXT, win INTEGER, played INTEGER)");
+await db.run(
+  "CREATE TABLE lorem (username TEXT, password TEXT, win INTEGER, played INTEGER)"
+);
 
-await db.run("INSERT INTO lorem (username, password, win, played) VALUES (?, ?, ?, ?)", ["samin", "123", 3, 5]);
-await db.run("INSERT INTO lorem (username, password, win , played) VALUES (?, ?, ?, ?)", ["elling", "1234", 2, 5]);
+await db.run(
+  "INSERT INTO lorem (username, password, win, played) VALUES (?, ?, ?, ?)",
+  ["samin", "123", 3, 5]
+);
+await db.run(
+  "INSERT INTO lorem (username, password, win , played) VALUES (?, ?, ?, ?)",
+  ["elling", "1234", 2, 5]
+);
 
 await db.run("DROP TABLE IF EXISTS matches");
 await db.run("CREATE TABLE matches (winner TEXT, loser TEXT)");
-await db.run("INSERT INTO matches (winner, loser) VALUES (?, ?)", ["samin", "elling"]);
-await db.run("INSERT INTO matches (winner, loser) VALUES (?, ?)", ["samin", "elling"]);
-await db.run("INSERT INTO matches (winner, loser) VALUES (?, ?)", ["samin", "elling"]);
-await db.run("INSERT INTO matches (winner, loser) VALUES (?, ?)", ["elling", "samin"]);
-await db.run("INSERT INTO matches (winner, loser) VALUES (?, ?)", ["elling", "samin"]);
+await db.run("INSERT INTO matches (winner, loser) VALUES (?, ?)", [
+  "samin",
+  "elling",
+]);
+await db.run("INSERT INTO matches (winner, loser) VALUES (?, ?)", [
+  "samin",
+  "elling",
+]);
+await db.run("INSERT INTO matches (winner, loser) VALUES (?, ?)", [
+  "samin",
+  "elling",
+]);
+await db.run("INSERT INTO matches (winner, loser) VALUES (?, ?)", [
+  "elling",
+  "samin",
+]);
+await db.run("INSERT INTO matches (winner, loser) VALUES (?, ?)", [
+  "elling",
+  "samin",
+]);
 
 // const statement = await db.prepare("INSERT INTO lorem VALUES (?)");
 // for (let i = 0; i < 10; i += 1) {
@@ -30,8 +53,8 @@ await db.run("INSERT INTO matches (winner, loser) VALUES (?, ?)", ["elling", "sa
 // }
 // statement.finalize();
 
-async function addMatch(winner,loser){
-  console.log("addmatch + w + L " + winner + " " + loser);
+async function addMatch(winner, loser) {
+  console.log(`addmatch + w + L ${winner} ${loser}`);
   const insertQuery = "INSERT INTO matches (winner, loser) VALUES (?, ?)";
   const insertData = [winner, loser];
   try {
@@ -59,8 +82,9 @@ async function checkAssistant(username, password) {
 async function registerUser(username, password) {
   console.log(`register${username} +${password}`);
 
-  const insertQuery = "INSERT INTO lorem (username, password, win, played) VALUES (?, ?, ?, ?)";
-  const insertData = [username, password, 0 , 0];
+  const insertQuery =
+    "INSERT INTO lorem (username, password, win, played) VALUES (?, ?, ?, ?)";
+  const insertData = [username, password, 0, 0];
   const row1 = await db.get("SELECT * FROM lorem WHERE username = ?", [
     username,
   ]);
@@ -92,46 +116,40 @@ async function incrementWin(username) {
   }
 }
 
-async function getUserWins(username){
-  try{
-    const row1 = await db.get(
-      "SELECT win FROM lorem WHERE username = ?",
-      [username]
-    );
+async function getUserWins(username) {
+  try {
+    const row1 = await db.get("SELECT win FROM lorem WHERE username = ?", [
+      username,
+    ]);
     return row1.win;
-  }
-  catch(error) {
+  } catch (error) {
     console.error(error);
     return 0;
   }
 }
-async function getUserPlayed(username){
-  try{
-    const row1 = await db.get(
-      "SELECT played FROM lorem WHERE username = ?",
-      [username]
-    );
+async function getUserPlayed(username) {
+  try {
+    const row1 = await db.get("SELECT played FROM lorem WHERE username = ?", [
+      username,
+    ]);
     return row1.played;
-  }
-  catch(error) {
+  } catch (error) {
     console.error(error);
     return 0;
   }
 }
-async function getUserHistory(username){
-  try{
+async function getUserHistory(username) {
+  try {
     const row1 = await db.all(
       "SELECT * FROM matches WHERE winner = ? OR loser = ?",
       [username, username]
     );
     return row1;
-  }
-  catch(error) {
+  } catch (error) {
     console.error(error);
     return [];
   }
 }
-
 
 async function incrementPlayed(username) {
   // Prepare the SQL statement
@@ -146,7 +164,15 @@ async function incrementPlayed(username) {
   }
 }
 
-
-export { checkAssistant, registerUser, incrementWin, getUserWins, incrementPlayed, addMatch,getUserPlayed, getUserHistory };
+export {
+  checkAssistant,
+  registerUser,
+  incrementWin,
+  getUserWins,
+  incrementPlayed,
+  addMatch,
+  getUserPlayed,
+  getUserHistory,
+};
 
 export default db;
